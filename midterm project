@@ -1,0 +1,70 @@
+import matplotlib.pyplot as plt
+
+while True:
+    solar = float(input('enter solar cell voltage:'))
+    time = input('Should I guess time With AM or PM:')
+
+    if time != 'AM' and time != 'PM':
+        print('Error, please pick one of the options')
+        continue
+
+    if time == 'PM':
+        print('Okay I will guess times in the afternoon')
+    else:
+        print('Okay I will guess times in the morning')
+
+    F_V = open('Voltage' + time + '.txt', 'r')
+    F_T = open('Time' + time + '.txt', 'r')
+
+    voltages = []
+    times = []
+
+    for line in F_V:
+        voltages.append(float(line.strip()))
+
+    for line in F_T:
+        times.append(line.strip())
+
+    F_V.close()
+    F_T.close()
+
+    closest_time = times[0]
+    smallest_difference = abs(solar - voltages[0])
+
+    for i in range(len(voltages)):
+        difference = abs(solar - voltages[i])
+
+        if difference < smallest_difference:
+            smallest_difference = difference
+            closest_time = times[i]
+
+    if solar > max(voltages):
+        print('Voltage is too high')
+    elif solar < min(voltages):
+        print('Voltage is too low')
+
+    F_C = open('current' + time + '.txt', 'r')
+    current = float(F_C.readline().strip())
+    F_C.close()
+    power = solar * current
+
+    plt.figure()
+    plt.plot(times, voltages, label='Recorded voltage')
+    plt.scatter([closest_time], [solar], color='red',
+                label='Your input (' + str(solar) + ' V at ' + closest_time + ')')
+    plt.xticks(rotation=45)
+    plt.ylabel('Voltage (V)')
+    plt.xlabel('Time (' + time + ')')
+    plt.title('Voltage vs Time (' + time + ')')
+    plt.grid()
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig('voltage_plot.png')
+    plt.show()
+
+    print('estimated power value is:', power)
+    print('The closest time is:', closest_time)
+
+    retry = input('Do you want to try again? (yes/no): ')
+    if retry != 'yes':
+        break
